@@ -13,6 +13,7 @@ import (
 )
 
 type Board struct {
+	GameName string `json:"gamename"`
 	Moves []string `json:"moves"`
 	Current int `json:"current"`
 	TimePop time.Time `json:"timepop"`
@@ -55,6 +56,7 @@ func (s *Server) Run() error {
 	s.boards = make(map[string]Board)
 	
 	slog.Info("Starting server on port 8080")
+	mux.HandleFunc("/api/board/ping", s.Ping)
 	mux.HandleFunc("/api/board/createnew", s.Createnewboard)
 	mux.HandleFunc("/api/board/get", s.Getboard)
 	err := http.ListenAndServe(":8080", mux)
@@ -64,10 +66,23 @@ func (s *Server) Run() error {
 	return nil
 }
 
+func (s *Server) Ping(w http.ResponseWriter, req *http.Request) {
+	_, err := w.Write([]byte("pong"))
+	if err != nil {
+		s.logger.Warn("couldn't send result message")
+	}
+}
+
 func (s *Server) Createnewboard(w http.ResponseWriter, req *http.Request) {
+	vars := req.URL.Query()
+	GameName, found := vars["gamename"]
+	if !found {
+		GameName = []string{"chess"};
+	}
 	Token_num, _ := rand.Int(rand.Reader, big.NewInt(1e16))
 	Token := fmt.Sprint(Token_num)
 	newboard := Board{
+		GameName: GameName[0],
 		Moves: []string{},
 		Current: 0,
 		TimePop: Addwaittime(time.Now()),
@@ -112,5 +127,6 @@ func main() {
 }
 
 // api:
-//    /api/board/createnew -> {"moves":[],"current":0,"timepop":"<date>","token":"<token>"}
+//    /api/ping -> pong
+//    /api/board/createnew?gamename=<optional> -> {"gamename":"chess","moves":[],"current":0,"timepop":"<date>","token":"<token>"}
 //    /api/board/get?token=<token> -> same as api/board/createnew
