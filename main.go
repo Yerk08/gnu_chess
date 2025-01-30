@@ -1,21 +1,17 @@
 package main
 
 import (
-	//"os"
-	"fmt"
+	"os"
 	"time"
 	"log/slog"
     "net/http"
-    "encoding/json"
-	"crypto/rand"
-	"math/big"
-    //"strings"
 )
 
 type Board struct {
 	GameName string `json:"gamename"`
 	Moves []string `json:"moves"`
 	Current int `json:"current"`
+	LastUpdate int `json:"lastupdate"`
 	TimePop time.Time `json:"timepop"`
 	Token string `json:"token"`
 }
@@ -56,9 +52,16 @@ func (s *Server) Run() error {
 	s.boards = make(map[string]Board)
 	
 	slog.Info("Starting server on port 8080")
-	mux.HandleFunc("/api/board/ping", s.Ping)
+	mux.HandleFunc("/", s.SendClientFile)
+	mux.HandleFunc("/client/{filename}", s.SendClientFile)
+	mux.HandleFunc("/images/{filename}", s.SendClientFile)
+	mux.HandleFunc("/favicon.ico", s.SendClientFile)
+	mux.HandleFunc("/api/ping", s.Ping)
+
 	mux.HandleFunc("/api/board/createnew", s.Createnewboard)
 	mux.HandleFunc("/api/board/get", s.Getboard)
+	mux.HandleFunc("/api/board/set", s.Setboard)
+
 	err := http.ListenAndServe(":8080", mux)
 	if err != http.ErrServerClosed {
 		return err
@@ -73,49 +76,22 @@ func (s *Server) Ping(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (s *Server) Createnewboard(w http.ResponseWriter, req *http.Request) {
-	vars := req.URL.Query()
-	GameName, found := vars["gamename"]
-	if !found {
-		GameName = []string{"chess"};
+func (s *Server) SendClientFile(w http.ResponseWriter, req *http.Request) {
+	filename := req.URL.Path
+	if filename == "/" {
+		filename = "/index.html"
 	}
-	Token_num, _ := rand.Int(rand.Reader, big.NewInt(1e16))
-	Token := fmt.Sprint(Token_num)
-	newboard := Board{
-		GameName: GameName[0],
-		Moves: []string{},
-		Current: 0,
-		TimePop: Addwaittime(time.Now()),
-		Token: Token,
-	}
-	s.boards[string(Token)] = newboard
-	go s.Boardautodelete(string(Token))
-	res, _ := json.Marshal(newboard)
-	_, err := w.Write([]byte(res))
+	res, err := os.ReadFile(filename)
 	if err != nil {
-		s.logger.Warn("couldn't send result message")
-	}
-}
-
-func (s *Server) Getboard(w http.ResponseWriter, req *http.Request) {
-	vars := req.URL.Query()
-	token,   _     := vars["token"]
-	myboard, found := s.boards[token[0]]
-	if !found {
-		http.Error(w, "unknown token", http.StatusNotFound)
+		s.logger.Warn("couldn't open file ", filename)
 		return
 	}
-	myboard.TimePop    = Addwaittime(time.Now())
-	s.boards[token[0]] = myboard
-
-	res, _ := json.Marshal(myboard)
-	_, err := w.Write([]byte(res))
+	_, err = w.Write(res)
 	if err != nil {
 		s.logger.Warn("couldn't send result message")
 		return
 	}
 }
-
 
 func main() {
 	logger     := slog.Default()
@@ -128,5 +104,8 @@ func main() {
 
 // api:
 //    /api/ping -> pong
-//    /api/board/createnew?gamename=<optional> -> {"gamename":"chess","moves":[],"current":0,"timepop":"<date>","token":"<token>"}
+
+//    /api/board/createnew?gamename=<optional> -> {"gamename":"chess","moves":[],"current":0,"lastupdate":"<date>","timepop":"<date>","token":"<token>"}
 //    /api/board/get?token=<token> -> same as api/board/createnew
+//    /api/board/set (body as json body) -> success
+
