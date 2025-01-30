@@ -15,7 +15,7 @@ func (s *Server) Createnewboard(w http.ResponseWriter, req *http.Request) {
 	if !found {
 		GameName = []string{"chess"};
 	}
-	Token_num, _ := rand.Int(rand.Reader, big.NewInt(1e16))
+	Token_num, _ := rand.Int(rand.Reader, big.NewInt(1e18))
 	Token := fmt.Sprint(Token_num)
 	newboard := Board{
 		GameName: GameName[0],
@@ -25,8 +25,8 @@ func (s *Server) Createnewboard(w http.ResponseWriter, req *http.Request) {
 		TimePop: Addwaittime(time.Now()),
 		Token: Token,
 	}
-	s.boards[string(Token)] = newboard
-	go s.Boardautodelete(string(Token))
+	s.boards[string(Token)[:9]] = newboard
+	go s.Boardautodelete(string(Token)[:9])
 	res, _ := json.Marshal(newboard)
 	_, err := w.Write([]byte(res))
 	if err != nil {
@@ -37,13 +37,14 @@ func (s *Server) Createnewboard(w http.ResponseWriter, req *http.Request) {
 func (s *Server) Getboard(w http.ResponseWriter, req *http.Request) {
 	vars := req.URL.Query()
 	token, _ := vars["token"]
-	myboard, found := s.boards[token[0]]
+	myboard, found := s.boards[token[0][:9]]
 	if !found {
 		http.Error(w, "unknown token", http.StatusNotFound)
 		return
 	}
 	myboard.TimePop = Addwaittime(time.Now())
-	s.boards[token[0]] = myboard
+	s.boards[token[0][:9]] = myboard
+	myboard.Token = myboard.Token[:9]
 
 	res, _ := json.Marshal(myboard)
 	_, err := w.Write([]byte(res))
@@ -61,9 +62,13 @@ func (s *Server) Setboard(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	Token := myboard.Token
-	realboard, found := s.boards[Token]
+	realboard, found := s.boards[Token[:9]]
 	if !found {
 		http.Error(w, "unknown token", http.StatusNotFound)
+		return
+	}
+	if realboard.Token != Token {
+		http.Error(w, "broken token", http.StatusNotFound)
 		return
 	}
 	if myboard.LastUpdate != realboard.LastUpdate {
@@ -72,6 +77,6 @@ func (s *Server) Setboard(w http.ResponseWriter, req *http.Request) {
 	}
 	myboard.TimePop = Addwaittime(time.Now())
 	myboard.LastUpdate++
-	s.boards[Token] = myboard
+	s.boards[Token[:9]] = myboard
 }
 

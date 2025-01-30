@@ -106,6 +106,6 @@ func main() {
 //    /api/ping -> pong
 
 //    /api/board/createnew?gamename=<optional> -> {"gamename":"chess","moves":[],"current":0,"lastupdate":"<date>","timepop":"<date>","token":"<token>"}
-//    /api/board/get?token=<token> -> same as api/board/createnew
+//    /api/board/get?token=<first 9 symbols of token> -> same as api/board/createnew
 //    /api/board/set (body as json body) -> success
 
