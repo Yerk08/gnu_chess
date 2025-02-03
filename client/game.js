@@ -68,7 +68,7 @@ boards = {
 	},
 }
 
-var rows, cols, board_elms, saved_data, tilesize, svr, svc
+var rows, cols, board_elms, saved_data, tilesize = 30, svr, svc
 var is_rotated = false
 function redraw_board() {
 	board_elms = copy(boards[saved_data.gamename].field);
@@ -85,7 +85,7 @@ function redraw_board() {
 	board_element.width = window.innerWidth;
 	board_element.height = window.innerHeight;
 	board_ctx.clearRect(0, 0, board_element.width, board_element.height);
-	board_ctx.font = "3em serif"
+	board_ctx.font = Math.ceil(tilesize.toString()) + "px serif"
 	tilesize = Math.min(board_element.width / (cols + 2), board_element.height / rows)
 	for (let i = 0; i < rows; ++i) {
 		for (let j = 0; j < cols; ++j) {
@@ -104,17 +104,17 @@ function redraw_board() {
 				board_ctx.fillRect(j * tilesize, i * tilesize, tilesize, tilesize)
 			}
 			if (selected) {
-				board_ctx.font = "3em serif bold"
+				board_ctx.font = Math.ceil(tilesize.toString()) + "px serif bold"
 				board_ctx.fillStyle = "blue"
-				board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + 48)
+				board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + tilesize * 0.8)
 				board_ctx.fillStyle = "black"
-				board_ctx.font = "3em serif"
+				board_ctx.font = Math.ceil(tilesize.toString()) + "px serif"
 			} else {
 				if (color) {
-					board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + 48)
+					board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + tilesize * 0.8)
 				} else {
 					board_ctx.fillStyle = "white"
-					board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + 48)
+					board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + tilesize * 0.8)
 					board_ctx.fillStyle = "black"
 				}
 			}
@@ -124,9 +124,9 @@ function redraw_board() {
 			}
 		}
 	}
-	board_ctx.fillText('<', (cols + 1) * tilesize + 8, tilesize + 48)
-	board_ctx.fillText('>', (cols + 1) * tilesize + 8, 2 * tilesize + 48)
-	board_ctx.fillText('@', (cols + 1) * tilesize + 8, 3 * tilesize + 48)
+	board_ctx.fillText('<', (cols + 1) * tilesize + 8, tilesize + tilesize * 0.8)
+	board_ctx.fillText('>', (cols + 1) * tilesize + 8, 2 * tilesize + tilesize * 0.8)
+	board_ctx.fillText('@', (cols + 1) * tilesize + 8, 3 * tilesize + tilesize * 0.8)
 }
 
 function update_board() {
@@ -151,9 +151,9 @@ function update_board() {
 		cols = boards[saved_data.gamename].cols
 		redraw_board()
 	}).catch(function(err) {
-		board_ctx.font = "3em serif bold"
+		board_ctx.font = Math.ceil(tilesize.toString()) + "px serif bold"
 		board_ctx.fillStyle = "purple"
-		board_ctx.fillText('error connection', 8, 48 + tilesize / 2)
+		board_ctx.fillText('error connection', 8, tilesize * 0.8 + tilesize / 2)
 		board_ctx.fillStyle = "black"
 	})
 }
