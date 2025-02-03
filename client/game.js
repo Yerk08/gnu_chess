@@ -33,6 +33,7 @@ image_from_code = {
 	"<": "Backward.svg",
 	">": "Forward.svg",
 	"@": "RotateBoard.svg",
+	"#": "Forbidden.svg"
 }
 
 boards = {
@@ -51,7 +52,7 @@ boards = {
 		],
 	},	
 	almost_wildebeest: {
-		rows: 10,
+		rows: 12,
 		cols: 11,
 		field: [
 			"RHCCGKQBBHR",
@@ -64,6 +65,8 @@ boards = {
 			"...........",
 			"ppppppppppp",
 			"rhbbqkgcchr",
+			"###########",
+			"qQgGqQgGqQg",
 		],
 	},
 }
@@ -174,12 +177,14 @@ addEventListener("click", (event) => {
 			if (saved_data.current < 0) {
 				saved_data.current = 0
 			}
+			saved_data.lastupdate += 1
 			is_diff = true
 		} else if (r == 2) {
 			saved_data.current += 1
 			if (saved_data.current > saved_data.moves.length) {
 				saved_data.current = saved_data.moves.length
 			}
+			saved_data.lastupdate += 1
 			is_diff = true
 		} else if (r == 3) {
 			is_rotated = !is_rotated
@@ -203,6 +208,7 @@ addEventListener("click", (event) => {
 			mv = String.fromCharCode(svr + 97) + String.fromCharCode(svc + 97)
 			mv = mv + String.fromCharCode(r + 97) + String.fromCharCode(c + 97)
 			saved_data.moves.push(mv)
+			saved_data.lastupdate += 1
 			is_diff = true
 			svr = null
 			svc = null
