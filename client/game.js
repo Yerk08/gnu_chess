@@ -194,7 +194,7 @@ addEventListener("click", (event) => {
 			r = rows - r - 1
 			c = cols - c - 1
 		}
-		if (svr) {
+		if (svr != undefined) {
 			if (svr == r && svc == c) {
 				svr = undefined
 				svc = undefined
