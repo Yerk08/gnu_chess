@@ -156,7 +156,9 @@ function redraw_board() {
 	board_ctx.fillText('@', (cols + 1) * tilesize + 8, 3 * tilesize + tilesize * 0.8)
 }
 
+var save_lock = false;
 function update_board() {
+	if (save_lock) return
 	fetch('/api/board/get?token=' + token, {
 		method: 'GET'
 	})
@@ -250,11 +252,16 @@ addEventListener("click", (event) => {
 		}
 	}
 	if (is_diff) {
+		save_lock = true
 		beep(100, 220)
-		fetch("/api/board/set", {
-			method: "POST",
-			body: JSON.stringify(saved_data)
-		})
+		try {
+			fetch("/api/board/set", {
+				method: "POST",
+				body: JSON.stringify(saved_data)
+			}).then(function() {save_lock = false})
+		} catch(err) {
+			save_lock = false
+		}
 		saved_data.lastupdate += 1
 	}
 	redraw_board()
