@@ -37,9 +37,13 @@ func (s *Server) Createnewboard(w http.ResponseWriter, req *http.Request) {
 func (s *Server) Getboard(w http.ResponseWriter, req *http.Request) {
 	vars := req.URL.Query()
 	token, _ := vars["token"]
+	if len(token[0]) < 9 {
+		http.Error(w, "{\"error\": \"unknown token\"}", http.StatusNotFound)
+		return
+	}
 	myboard, found := s.boards[token[0][:9]]
 	if !found {
-		http.Error(w, "unknown token", http.StatusNotFound)
+		http.Error(w, "{\"error\": \"unknown token\"}", http.StatusNotFound)
 		return
 	}
 	myboard.TimePop = Addwaittime(time.Now())
@@ -58,21 +62,25 @@ func (s *Server) Setboard(w http.ResponseWriter, req *http.Request) {
 	var myboard Board
 	err := json.NewDecoder(req.Body).Decode(&myboard)
 	if err != nil {
-		http.Error(w, "unresolved request", http.StatusNotFound)
+		http.Error(w, "{\"error\": \"unresolved request\"}", http.StatusNotFound)
 		return
 	}
 	Token := myboard.Token
+	if len(Token) < 9 {
+		http.Error(w, "{\"error\": \"unknown token\"}", http.StatusNotFound)
+		return
+	}
 	realboard, found := s.boards[Token[:9]]
 	if !found {
-		http.Error(w, "unknown token", http.StatusNotFound)
+		http.Error(w, "{\"error\": \"unknown token\"}", http.StatusNotFound)
 		return
 	}
 	if realboard.Token != Token {
-		http.Error(w, "broken token", http.StatusNotFound)
+		http.Error(w, "{\"error\": \"unknown token\"}", http.StatusNotFound)
 		return
 	}
 	if myboard.LastUpdate != realboard.LastUpdate {
-		http.Error(w, "missed update", http.StatusNotFound)
+		http.Error(w, "{\"error\": \"missed update\"}", http.StatusNotFound)
 		return
 	}
 	myboard.TimePop = Addwaittime(time.Now())
