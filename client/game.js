@@ -2,6 +2,31 @@ function copy(object) {
 	return JSON.parse(JSON.stringify(object))
 }
 
+var audioCtx = new (window.AudioContext || window.webkitAudioContext || window.audioContext);
+
+//All arguments are optional:
+
+//duration of the tone in milliseconds. Default is 500
+//frequency of the tone in hertz. default is 440
+//volume of the tone. Default is 1, off is 0.
+//type of tone. Possible values are sine, square, sawtooth, triangle, and custom. Default is sine.
+//callback to use on end of tone
+function beep(duration, frequency, volume, type, callback) {
+    var oscillator = audioCtx.createOscillator();
+    var gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    if (volume){gainNode.gain.value = volume;}
+    if (frequency){oscillator.frequency.value = frequency;}
+    if (type){oscillator.type = type;}
+    if (callback){oscillator.onended = callback;}
+    
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + ((duration || 500) / 1000));
+};
+
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
@@ -147,6 +172,15 @@ function update_board() {
 			})
 			return
 		}
+		try {
+			if (JSON.stringify(data.moves) != JSON.stringify(saved_data.moves)) {
+				beep(100, 220)
+			} else if (JSON.stringify(data.current) != JSON.stringify(saved_data.current)) {
+				beep(100, 220)
+			}
+		} catch(error) {
+			console.error(error)
+		}
 		saved_data = data
 		saved_data.token = token
 		rows = boards[saved_data.gamename].rows
@@ -216,11 +250,12 @@ addEventListener("click", (event) => {
 		}
 	}
 	if (is_diff) {
+		beep(100, 220)
 		fetch("/api/board/set", {
 			method: "POST",
 			body: JSON.stringify(saved_data)
-		});
+		})
 		saved_data.lastupdate += 1
 	}
 	redraw_board()
-});
+})
