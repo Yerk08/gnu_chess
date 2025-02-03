@@ -28,12 +28,11 @@ image_from_code = {
 	"p": "WhitePawn.svg",
 	"q": "WhiteQueen.svg",
 	"r": "WhiteRook.svg",
-	".": "Empty.svg",
+	" ": "Empty.svg",
 	
 	"<": "Backward.svg",
 	">": "Forward.svg",
 	"@": "RotateBoard.svg",
-	"#": "Forbidden.svg"
 }
 
 boards = {
@@ -43,10 +42,10 @@ boards = {
 		field: [
 			"RHBQKBHR",
 			"PPPPPPPP",
-			"........",
-			"........",
-			"........",
-			"........",
+			"        ",
+			"        ",
+			"        ",
+			"        ",
 			"pppppppp",
 			"rhbqkbhr",
 		],
@@ -57,15 +56,15 @@ boards = {
 		field: [
 			"RHCCGKQBBHR",
 			"PPPPPPPPPPP",
-			"...........",
-			"...........",
-			"...........",
-			"...........",
-			"...........",
-			"...........",
+			"           ",
+			"           ",
+			"           ",
+			"           ",
+			"           ",
+			"           ",
 			"ppppppppppp",
 			"rhbbqkgcchr",
-			"###########",
+			"           ",
 			"qQgGqQgGqQg",
 		],
 	},
@@ -82,7 +81,7 @@ function redraw_board() {
 		i2 = mv.charCodeAt(2) - 97
 		j2 = mv.charCodeAt(3) - 97
 		board_elms[i2] = board_elms[i2].slice(0, j2) + board_elms[i1][j1] + board_elms[i2].slice(j2 + 1, cols)
-		board_elms[i1] = board_elms[i1].slice(0, j1) + '.' + board_elms[i1].slice(j1 + 1, cols)
+		board_elms[i1] = board_elms[i1].slice(0, j1) + ' ' + board_elms[i1].slice(j1 + 1, cols)
 	}
 
 	board_element.width = window.innerWidth;
@@ -177,14 +176,12 @@ addEventListener("click", (event) => {
 			if (saved_data.current < 0) {
 				saved_data.current = 0
 			}
-			saved_data.lastupdate += 1
 			is_diff = true
 		} else if (r == 2) {
 			saved_data.current += 1
 			if (saved_data.current > saved_data.moves.length) {
 				saved_data.current = saved_data.moves.length
 			}
-			saved_data.lastupdate += 1
 			is_diff = true
 		} else if (r == 3) {
 			is_rotated = !is_rotated
@@ -208,12 +205,11 @@ addEventListener("click", (event) => {
 			mv = String.fromCharCode(svr + 97) + String.fromCharCode(svc + 97)
 			mv = mv + String.fromCharCode(r + 97) + String.fromCharCode(c + 97)
 			saved_data.moves.push(mv)
-			saved_data.lastupdate += 1
 			is_diff = true
 			svr = null
 			svc = null
 		} else {
-			if (board_elms[r][c] != '.') {
+			if (board_elms[r][c] != ' ') {
 				svr = r
 				svc = c
 			}
@@ -224,6 +220,7 @@ addEventListener("click", (event) => {
 			method: "POST",
 			body: JSON.stringify(saved_data)
 		});
+		saved_data.lastupdate += 1
 	}
 	redraw_board()
 });
