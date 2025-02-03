@@ -85,7 +85,7 @@ function redraw_board() {
 	board_element.width = window.innerWidth;
 	board_element.height = window.innerHeight;
 	board_ctx.clearRect(0, 0, board_element.width, board_element.height);
-	board_ctx.font = "48px serif"
+	board_ctx.font = "3em serif"
 	tilesize = Math.min(board_element.width / (cols + 2), board_element.height / rows)
 	for (let i = 0; i < rows; ++i) {
 		for (let j = 0; j < cols; ++j) {
@@ -104,11 +104,11 @@ function redraw_board() {
 				board_ctx.fillRect(j * tilesize, i * tilesize, tilesize, tilesize)
 			}
 			if (selected) {
-				board_ctx.font = "70px serif bold"
+				board_ctx.font = "3em serif bold"
 				board_ctx.fillStyle = "blue"
 				board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + 48)
 				board_ctx.fillStyle = "black"
-				board_ctx.font = "48px serif"
+				board_ctx.font = "3em serif"
 			} else {
 				if (color) {
 					board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + 48)
@@ -151,7 +151,7 @@ function update_board() {
 		cols = boards[saved_data.gamename].cols
 		redraw_board()
 	}).catch(function(err) {
-		board_ctx.font = "70px serif bold"
+		board_ctx.font = "3em serif bold"
 		board_ctx.fillStyle = "purple"
 		board_ctx.fillText('error connection', 8, 48 + tilesize / 2)
 		board_ctx.fillStyle = "black"
