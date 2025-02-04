@@ -36,28 +36,39 @@ const board_element = document.getElementById("board")
 const board_ctx = board_element.getContext('2d');
 
 image_from_code = {
-	"B": "BlackBishop.svg",
-	"C": "BlackCamel.svg",
-	"G": "BlackGnu.svg",
-	"K": "BlackKing.svg",
-	"H": "BlackKnight.svg",
-	"P": "BlackPawn.svg",
-	"Q": "BlackQueen.svg",
-	"R": "BlackRook.svg",
+	"B": "BlackBishop.png",
+	"C": "BlackCamel.png",
+	"G": "BlackGnu.png",
+	"K": "BlackKing.png",
+	"H": "BlackKnight.png",
+	"P": "BlackPawn.png",
+	"Q": "BlackQueen.png",
+	"R": "BlackRook.png",
+	"D": "BlackDragon.png",
+	"U": "BlackUnicorn.png",
+	"Z": "BlackZebra.png",
 
-	"b": "WhiteBishop.svg",
-	"c": "WhiteCamel.svg",
-	"g": "WhiteGnu.svg",
-	"k": "WhiteKing.svg",
-	"h": "WhiteKnight.svg",
-	"p": "WhitePawn.svg",
-	"q": "WhiteQueen.svg",
-	"r": "WhiteRook.svg",
-	" ": "Empty.svg",
+	"b": "WhiteBishop.png",
+	"c": "WhiteCamel.png",
+	"g": "WhiteGnu.png",
+	"k": "WhiteKing.png",
+	"h": "WhiteKnight.png",
+	"p": "WhitePawn.png",
+	"q": "WhiteQueen.png",
+	"r": "WhiteRook.png",
+	"d": "WhiteDragon.png",
+	"u": "WhiteUnicorn.png",
+	"z": "WhiteZebra.png",
 	
-	"<": "Backward.svg",
-	">": "Forward.svg",
-	"@": "RotateBoard.svg",
+	" ": "Empty.png",
+	"<": "Backward.png",
+	">": "Forward.png",
+	"@": "RotateBoard.png",
+}
+var image_list = {}
+for (const cell in image_from_code) {
+	image_list[cell] = new Image()
+	image_list[cell].src = "/images/" + image_from_code[cell]
 }
 
 boards = {
@@ -113,7 +124,7 @@ function redraw_board() {
 	board_element.height = window.innerHeight;
 	board_ctx.clearRect(0, 0, board_element.width, board_element.height);
 	board_ctx.font = Math.ceil(tilesize.toString()) + "px serif"
-	tilesize = Math.min(board_element.width / (cols + 2), board_element.height / rows)
+	tilesize = Math.min(board_element.width / (cols + 1), board_element.height / rows)
 	for (let i = 0; i < rows; ++i) {
 		for (let j = 0; j < cols; ++j) {
 			cell = board_elms[i][j]
@@ -128,22 +139,21 @@ function redraw_board() {
 				board_ctx.fillRect(j * tilesize, i * tilesize, tilesize, tilesize)
 				board_ctx.fillStyle = "black"
 			} else {
+				board_ctx.fillStyle = "grey"
 				board_ctx.fillRect(j * tilesize, i * tilesize, tilesize, tilesize)
+				board_ctx.fillStyle = "black"
 			}
 			if (selected) {
-				board_ctx.font = Math.ceil(tilesize.toString()) + "px serif bold"
-				board_ctx.fillStyle = "blue"
-				board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + tilesize * 0.8)
-				board_ctx.fillStyle = "black"
-				board_ctx.font = Math.ceil(tilesize.toString()) + "px serif"
-			} else {
 				if (color) {
-					board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + tilesize * 0.8)
+					board_ctx.fillStyle = "lightblue"
 				} else {
-					board_ctx.fillStyle = "white"
-					board_ctx.fillText(cell, j * tilesize + 8, i * tilesize + tilesize * 0.8)
-					board_ctx.fillStyle = "black"
+					board_ctx.fillStyle = "darkblue"
 				}
+				board_ctx.fillRect(j * tilesize, i * tilesize, tilesize, tilesize)
+				board_ctx.fillStyle = "black"
+				board_ctx.drawImage(image_list[cell], j * tilesize, i * tilesize, tilesize, tilesize)
+			} else {
+				board_ctx.drawImage(image_list[cell], j * tilesize, i * tilesize, tilesize, tilesize)
 			}
 			if (is_rotated) {
 				i = rows - i - 1
@@ -151,12 +161,12 @@ function redraw_board() {
 			}
 		}
 	}
-	board_ctx.fillText('<', (cols + 1) * tilesize + 8, tilesize + tilesize * 0.8)
-	board_ctx.fillText('>', (cols + 1) * tilesize + 8, 2 * tilesize + tilesize * 0.8)
-	board_ctx.fillText('@', (cols + 1) * tilesize + 8, 3 * tilesize + tilesize * 0.8)
+	board_ctx.drawImage(image_list['<'], cols * tilesize, tilesize, tilesize, tilesize)
+	board_ctx.drawImage(image_list['>'], cols * tilesize, 2 * tilesize, tilesize, tilesize)
+	board_ctx.drawImage(image_list['@'], cols * tilesize, 3 * tilesize, tilesize, tilesize)
 }
 
-var save_lock = false;
+var save_lock = 0;
 function update_board() {
 	if (save_lock) return
 	fetch('/api/board/get?token=' + token, {
@@ -252,15 +262,15 @@ addEventListener("click", (event) => {
 		}
 	}
 	if (is_diff) {
-		save_lock = true
+		save_lock += 1
 		beep(100, 220)
 		try {
 			fetch("/api/board/set", {
 				method: "POST",
 				body: JSON.stringify(saved_data)
-			}).then(function() {save_lock = false})
+			}).then(function() {save_lock -= 1})
 		} catch(err) {
-			save_lock = false
+			save_lock -= 1
 		}
 		saved_data.lastupdate += 1
 	}
